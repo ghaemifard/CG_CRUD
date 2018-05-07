@@ -1,0 +1,66 @@
+[comment encoding = Cp1252 /]
+[module serviceTest('http://www.query.this.is/v1.0/beta')/]
+
+[query public isNameBig(arg0 : Field) : Boolean
+	= invoke('edu.islab.acceleo.query.common.ServiceTest', 'isNameBig(query.Field)', Sequence{arg0})
+/]
+
+[query public isThereFirstTable(arg0 : OutputInstalment) : Boolean
+	= invoke('edu.islab.acceleo.query.common.ServiceTest', 'isThereFirstTable(query.OutputInstalment)', Sequence{arg0})
+/]
+
+[query public getFirstTable(arg0 : OutputInstalment) : String
+	= invoke('edu.islab.acceleo.query.common.ServiceTest', 'getFirstTable(query.OutputInstalment)', Sequence{arg0})
+/]
+
+[query public isThereRelations(arg0 : OutputInstalment) : Boolean
+	= invoke('edu.islab.acceleo.query.common.ServiceTest', 'isThereRelations(query.OutputInstalment)', Sequence{arg0})
+/]
+
+[query public tableOField(arg0 : Field) : String
+	= invoke('edu.islab.acceleo.query.common.ServiceTest', 'tableOField(query.Field)', Sequence{arg0})
+/]
+
+[query public fieldName(arg0 : Field) : String
+	= invoke('edu.islab.acceleo.query.common.ServiceTest', 'fieldName(query.Field)', Sequence{arg0})
+/]
+
+[query public getSelectRelationType(arg0 : RelationSelect) : String
+	= invoke('edu.islab.acceleo.query.common.ServiceTest', 'getSelectRelationType(query.RelationSelect)', Sequence{arg0})
+/]
+
+[query public isThereRoot(arg0 : ConditionInstalment) : Boolean
+	= invoke('edu.islab.acceleo.query.common.ServiceTest', 'isThereRoot(query.ConditionInstalment)', Sequence{arg0})
+/]
+
+[query public isEqualDisType(arg0 : JuncType, arg1 : String) : Boolean
+	= invoke('edu.islab.acceleo.query.common.ServiceTest', 'isEqualDisType(query.JuncType, java.lang.String)', Sequence{arg0, arg1})
+/]
+[query public isCallQuery(arg0 : AbstractNode ) : Boolean
+	= invoke('edu.islab.acceleo.query.common.ServiceTest', 'isCallQuery(query.AbstractNode )', Sequence{arg0})
+/]
+[query public callQuryNow(arg0 : String,  arg1 : Integer) : String
+	= invoke('edu.islab.acceleo.query.common.ServiceTest', 'callQuryNow(java.lang.String, java.lang.Integer)', Sequence{arg0, arg1})
+/]
+[query public generateNodep(arg0 : AbstractNode) : String
+	= invoke('edu.islab.acceleo.query.common.ServiceTest', 'generateNodep(query.AbstractNode)', Sequence{arg0})
+/]
+[query public insertToMap(arg0 : QuerySurface) : String
+	= invoke('edu.islab.acceleo.query.common.ServiceTest', 'insertToMap(query.QuerySurface)', Sequence{arg0})
+/]
+[query public prepareInput(arg0 : InputInstalment, arg1 : String) : String
+	= invoke('edu.islab.acceleo.query.common.ServiceTest', 'prepareInput(query.InputInstalment,java.lang.String)', Sequence{arg0,arg1})
+/]
+[query public getCounter(arg0 : AbstractNode) : Integer
+	= invoke('edu.islab.acceleo.query.common.ServiceTest', 'getCounter(query.AbstractNode)', Sequence{arg0})
+/]
+[query public resetCounter(arg0 : AbstractNode  ) : String
+	= invoke('edu.islab.acceleo.query.common.ServiceTest', 'resetCounter(query.AbstractNode)', Sequence{arg0})
+/]
+[query public convertFileToJdbc(arg0 : InputInstalment, arg1 : String) : String
+	= invoke('edu.islab.acceleo.query.common.ServiceTest', 'convertFileToJdbc(query.InputInstalment,java.lang.String)', Sequence{arg0,arg1})
+/]
+[query public appendMethod(arg0 : QuerySurface ) : String
+	= invoke('edu.islab.acceleo.query.common.ServiceTest', 'appendMethod(query.QuerySurface )', Sequence{arg0})
+/]
+

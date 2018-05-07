@@ -1,0 +1,138 @@
+[comment  encoding = UTF-8 /]
+[module generate('http://www.delete.it.is/v1.0/beta')]
+[import edu::islab::acceleo::delete::common::deleteHelper /]
+
+[template public generateElement(aDeleteSurface : DeleteSurface)]
+	[comment @main /]
+	[file (aDeleteSurface.name.concat('.sql'), false, 'utf-8')]
+		[if (aDeleteSurface.tableInsta.tables->size() > 0)]
+			 
+			delete from [aDeleteSurface.tableInsta.tables->at(1).name /] as [aDeleteSurface.tableInsta.tables->at(1).alias /]  [if (aDeleteSurface.whereInsta.isThereRoot())]
+		[if (aDeleteSurface.tableInsta.rels->size()>0) ]
+			[for (v1 : RelationSelect | aDeleteSurface.tableInsta.rels) ]
+				[let v2 : InnerjoinRels = v1 ] 
+					inner join [ v1.target.tableOField() /] on [v1.source.fieldName()/] [v1.getSelectRelationType()/] [ v1.target.fieldName()/]
+				[/let]
+				[let v2 : LeftOuterJoinRels = v1]
+					left outer join [ v1.target.tableOField() /] on [v1.source.fieldName()/] [v1.getSelectRelationType()/] [ v1.target.fieldName()/]
+				[/let]
+				[let v2 : RightOuterJoinRels = v1]
+					right outer join [ v1.target.tableOField() /] on [v1.source.fieldName()/] [v1.getSelectRelationType()/] [ v1.target.fieldName()/]
+				[/let]
+				[let v2 : FullOuterJoinRels = v1]
+					full outer join [ v1.target.tableOField() /] on [v1.source.fieldName()/] [v1.getSelectRelationType()/] [ v1.target.fieldName()/]
+				[/let] 
+
+			[/for]
+		[/if] 
+[if (aDeleteSurface.whereInsta.isThereRoot())]
+		Where [for (item : AbstractConditionElement | aDeleteSurface.whereInsta.parts)] 
+			[let m : RootJunction = item]
+				[ m.generateCondoElement() /]
+			[/let]
+ [/for]
+	[/if]
+[if (aDeleteSurface.sortInstalment <> null and aDeleteSurface.sortInstalment.pointers->size() > 0)]
+	SORT BY 
+	[for (po : FieldSPointer | aDeleteSurface.sortInstalment.pointers) separator (',')] [if (po.field <> null)] [po.field.fieldName()/] [ po.type /] [/if] [/for]
+[/if]
+	[/if]  
+		[/if]
+	[/file]
+[file (aDeleteSurface.name.concat('_Func.java'), false, 'utf-8')]
+		 
+public static List<[aDeleteSurface.associatedClass.toUpperFirst()/]> [aDeleteSurface.name/]( [if (aDeleteSurface.inputInsta <> null)]
+	[for (it : InputDef | aDeleteSurface.inputInsta.inputs)  separator (',') ] [it.inputName()/] [/for] [/if]){
+
+	DataAccess<[aDeleteSurface.associatedClass.toUpperFirst() /]> da = DataAccess.<[aDeleteSurface.associatedClass.toUpperFirst() /]>getDataAccessInstance();
+	return da.resultOperation("[aDeleteSurface.inputInsta.convertFileToJdbc(aDeleteSurface.name)/]",(stm)-> {
+[if (aDeleteSurface.inputInsta <> null)]
+		[aDeleteSurface.inputInsta.prepareInput(aDeleteSurface.name) /] 
+[/if]
+		 return true;
+	});
+}
+	 
+	[/file]
+[/template]
+
+[template public generateDisjuncAnd(dis : Junction) post (trim())]
+	    [for (a : JuncRelationship | dis.rels )  separator ('AND')  ]
+			( [ generateCondoElement(a.target) /] )
+		[/for]
+[/template]
+
+[template public generateDisjuncOr(dis : Junction) post (trim())]
+	    [for (a : JuncRelationship | dis.rels ) separator ('OR')]
+			( [ generateCondoElement(a.target) /] )
+		[/for]
+[/template]
+
+[template public generateCondoElement(arg : AbstractConditionElement) post (trim())]
+	[let e : Junction = arg]
+		[if (e.type.isEqualDisType('and'))]
+			[ generateDisjuncAnd(e) /]
+		[/if]
+		[if (e.type.isEqualDisType('or'))]
+			[ generateDisjuncOr(e) /]
+		[/if] 
+	[/let]
+	[let e : Term = arg]
+		 [e.link.src.generateNode(null)/] [e.link.getTermRelatianValue()/] [ e.link.dst.generateNode(null) /]  
+	[/let]
+[/template]
+
+[template public getTermRelatianValue(it : ConditionLink) post (trim())] 
+[let x : EqualLink = it]=[/let] 
+[let x : GreaterThanLink = it]>[/let]
+[let x : GreaterEqualThanLink = it]>=[/let]
+[let x : LowerThanLink = it]<[/let]
+[let x : LowerEqualThanLink = it]<=[/let]
+[let x : InLink = it]in[/let]
+[let x : LikeLink = it]like[/let]
+
+[/template]
+[template public getPostfix(it : AbstractNode) post (trim())]
+	[let va : Node = it][if (va.column_name <> null and va.column_name.size() > 1)]
+ as [va.column_name/] 
+[/if] 
+[/let]  
+[/template]
+[template public generateNode(nde: AbstractNode ) post (trim())]
+[let n : Field = nde] [if (n.distict)] distinct [/if]   [n.fieldName()/] [/let]
+[let n : MyTable = nde] [for (e : Field | n.fields) separator (',')] [generateField(e, n.alias)/] [e.getPostfix()/]  [/for] [/let]
+[let n : Literal = nde] [if (n.ltype = LiteralType::STRING )] "[n.value /]" [else]   [n.value /] [/if][/let]
+[let n : NullLiteral = nde]null [if (n.column_name <> null)] [/if] [/let]
+[let n : Input = nde][if (n.inputRef <> null)]:[n.inputRef.name /][/if][/let] 
+[let n : CallSurfaceQuery = nde] [ n.generateNodep( ) /]  [/let]
+[let n : Function = nde] [if ((not nde.isCallQuery()) and n.funcDef <> null)]
+[if (n.funcDef.name = '-' or n.funcDef.name = '+' or n.funcDef.name = '*' or n.funcDef.name = '/')]
+	( [for (e : Node | n.params) separator (n.funcDef.name)] [generateNode(e)/] [/for] )
+[else]
+ [n.funcDef.name/]( [for (e : Node | n.params) separator (',')] [generateNode(e)/] [/for] )
+[/if]
+ [/if] [/let]
+[/template]
+
+[template public generateField(f : Field,n : String)]
+	[ n /].[f.giveTheColumnName()/]
+[/template]
+ 
+[template public giveTheColumnName(aNode: Field) post (trim()) ]
+	[if (aNode.column_name <> null and aNode.column_name.size() > 0)]
+		 [aNode.column_name/]
+	[else]
+		 [aNode.name/]
+	[/if]
+[/template]
+
+
+[template public inputName(arg : InputDef) post (trim())]
+	[let x : InputStringDef = arg] final String  [ x.name /] [/let]
+	[let x : InputIntDef = arg ] final int  [ x.name /]	[/let]
+	[let x : InputFloatDef = arg] final float  [ x.name /]	[/let]
+	[let x : InputDateDef = arg] final Date  [ x.name /] [/let]
+	[let x : InputBitsDef = arg] final int  [ x.name /]	[/let]
+[/template]
+
+  

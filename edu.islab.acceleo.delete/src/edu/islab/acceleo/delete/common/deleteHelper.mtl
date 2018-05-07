@@ -1,0 +1,47 @@
+[comment encoding = Cp1252 /]
+[module deleteHelper('http://www.delete.it.is/v1.0/beta')/]
+
+[query public isNameBig(arg0 : Field) : Boolean
+	= invoke('edu.islab.acceleo.delete.common.DeleteHelper', 'isNameBig(delete.Field)', Sequence{arg0})
+/]
+
+[query public isThereRelations(arg0 : TableListInstalment) : Boolean
+	= invoke('edu.islab.acceleo.delete.common.DeleteHelper', 'isThereRelations(delete.TableListInstalment)', Sequence{arg0})
+/]
+
+[query public tableOField(arg0 : Field) : String
+	= invoke('edu.islab.acceleo.delete.common.DeleteHelper', 'tableOField(delete.Field)', Sequence{arg0})
+/]
+
+[query public fieldName(arg0 : Field) : String
+	= invoke('edu.islab.acceleo.delete.common.DeleteHelper', 'fieldName(delete.Field)', Sequence{arg0})
+/]
+
+[query public getSelectRelationType(arg0 : RelationSelect) : String
+	= invoke('edu.islab.acceleo.delete.common.DeleteHelper', 'getSelectRelationType(delete.RelationSelect)', Sequence{arg0})
+/]
+
+[query public isThereRoot(arg0 : ConditionInstalment) : Boolean
+	= invoke('edu.islab.acceleo.delete.common.DeleteHelper', 'isThereRoot(delete.ConditionInstalment)', Sequence{arg0})
+/]
+
+[query public isEqualDisType(arg0 : JuncType, arg1 : String) : Boolean
+	= invoke('edu.islab.acceleo.delete.common.DeleteHelper', 'isEqualDisType(delete.JuncType, java.lang.String)', Sequence{arg0, arg1})
+/]
+
+[query public isCallQuery(arg0 : AbstractNode) : Boolean
+	= invoke('edu.islab.acceleo.delete.common.DeleteHelper', 'isCallQuery(delete.AbstractNode)', Sequence{arg0})
+/]
+
+[query public generateNodep(arg0 : Node) : String
+	= invoke('edu.islab.acceleo.delete.common.DeleteHelper', 'generateNodep(delete.Node)', Sequence{arg0})
+/]
+
+[query public prepareInput(arg0 : InputInstalment, arg1 : String) : String
+	= invoke('edu.islab.acceleo.delete.common.DeleteHelper', 'prepareInput(delete.InputInstalment, java.lang.String)', Sequence{arg0, arg1})
+/]
+
+[query public convertFileToJdbc(arg0 : InputInstalment, arg1 : String) : String
+	= invoke('edu.islab.acceleo.delete.common.DeleteHelper', 'convertFileToJdbc(delete.InputInstalment, java.lang.String)', Sequence{arg0, arg1})
+/]
+

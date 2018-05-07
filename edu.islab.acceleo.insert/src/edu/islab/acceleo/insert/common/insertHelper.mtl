@@ -1,0 +1,19 @@
+[comment encoding = Cp1252 /]
+[module insertHelper('http://www.insert.it.is/v1.0/beta')/]
+
+[query public prepareInput(arg0 : InputInstalment, arg1 : String) : String
+	= invoke('edu.islab.acceleo.insert.common.InsertHelper', 'prepareInput(insert.InputInstalment, java.lang.String)', Sequence{arg0, arg1})
+/]
+
+[query public convertFileToJdbc(arg0 : InputInstalment, arg1 : String) : String
+	= invoke('edu.islab.acceleo.insert.common.InsertHelper', 'convertFileToJdbc(insert.InputInstalment, java.lang.String)', Sequence{arg0, arg1})
+/]
+
+[query public isCallQuery(arg0 : AbstractNode) : Boolean
+	= invoke('edu.islab.acceleo.insert.common.InsertHelper', 'isCallQuery(insert.AbstractNode)', Sequence{arg0})
+/]
+
+[query public generateNodep(arg0 : Node) : String
+	= invoke('edu.islab.acceleo.insert.common.InsertHelper', 'generateNodep(insert.Node)', Sequence{arg0})
+/]
+

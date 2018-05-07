@@ -1,0 +1,237 @@
+[comment encoding = UTF-8 /]
+[module generate('http://www.query.this.is/v1.0/beta')]
+[import edu::islab::acceleo::query::common::serviceTest /]
+
+[template public generateElement(aQuerySurface : QuerySurface) { count : Integer  = -1; }]
+[ aQuerySurface.insertToMap() /]
+[comment @main /]
+[file ( aQuerySurface.name.concat('.sql'), false, 'Cp1252' )]
+	select [for (f : AbstractNode | aQuerySurface.outputInstalment.nodes) separator (',')] [ f.generateNode() /] [f.getPostfix()/] [/for]
+	[if (aQuerySurface.outputInstalment.isThereFirstTable())]
+		FROM [ aQuerySurface.outputInstalment.getFirstTable() /]
+	[/if]
+	[if (aQuerySurface.outputInstalment.isThereRelations())]
+		[for ( rel : RelationSelect | aQuerySurface.outputInstalment.rels)]
+			[let r : InnerjoinRels = rel]
+				inner join [ r.target.tableOField() /] on [ r.source.fieldName() /] [ r.getSelectRelationType() /] [ r.target.fieldName() /]
+			[/let]
+			[let r : LeftOuterJoinRels = rel]
+				left outer  join [ r.target.tableOField() /] on [ r.source.fieldName() /] [ r.getSelectRelationType() /] [ r.target.fieldName() /]
+			[/let]
+			[let r : RightOuterJoinRels = rel]
+				right outer join [ r.target.tableOField() /] on [ r.source.fieldName() /] [ r.getSelectRelationType() /] [ r.target.fieldName() /]
+			[/let]
+			[let r : FullOuterJoinRels = rel]
+				full outer join [ r.target.tableOField() /] on [ r.source.fieldName() /] [ r.getSelectRelationType() /] [ r.target.fieldName() /]
+			[/let]
+		[/for]
+	[/if]
+	[if (aQuerySurface.whereInstalment.isThereRoot())]
+		Where [for (item : AbstractConditionElement | aQuerySurface.whereInstalment.parts)] 
+			[let m : RootJunction = item]
+				[ m.generateCondoElement() /]
+			[/let]
+ [/for]
+	[/if]
+[if (aQuerySurface.groupInstalment <> null and aQuerySurface.groupInstalment.pointers->size() > 0)]
+	GROUP BY 
+	[for (po : FieldGPointer | aQuerySurface.groupInstalment.pointers) separator (',')] [if (po.field <> null)] [po.field.fieldName()/] [/if] [/for]
+[/if]
+[if (aQuerySurface.havingInstalment.isThereRoot())]
+		Having [for (item : AbstractConditionElement | aQuerySurface.havingInstalment.parts)] 
+			[let m : RootJunction = item]
+				[ m.generateCondoElement() /]
+			[/let]
+ [/for]
+	[/if]
+[if (aQuerySurface.sortInstalment <> null and aQuerySurface.sortInstalment.pointers->size() > 0)]
+	SORT BY 
+	[for (po : FieldSPointer | aQuerySurface.sortInstalment.pointers) separator (',')] [if (po.field <> null)] [po.field.fieldName()/] [ po.type /] [/if] [/for]
+[/if]
+[/file]
+[if (aQuerySurface.createClass)]
+[file (aQuerySurface.associatedClass.toUpperFirst().concat('.java'), false, 'Cp1252')]
+public class [aQuerySurface.associatedClass.toUpperFirst()/] {
+	[for (it : AbstractNode | aQuerySurface.outputInstalment.nodes)]
+		[it.outputProperties()/] 
+	[/for]
+
+		[for (it : AbstractNode | aQuerySurface.outputInstalment.nodes)]
+			[it.outputSetter()/]
+		[/for]
+		[for (it : AbstractNode | aQuerySurface.outputInstalment.nodes)]
+			[it.outputGetter()/]
+		[/for] 
+}
+[/file]
+[/if]
+
+[file ((aQuerySurface.name.concat('_Func.java')), false, 'Cp1252')]
+
+public static List<[aQuerySurface.associatedClass.toUpperFirst()/]> [aQuerySurface.name/]( [if (aQuerySurface.inputInstalment <> null)]
+	[for (it : InputDef | aQuerySurface.inputInstalment.inputs)  separator (',') ] [it.inputName()/] [/for] [/if]){
+
+	DataAccess<[aQuerySurface.associatedClass.toUpperFirst() /]> da = DataAccess.<[aQuerySurface.associatedClass.toUpperFirst() /]>getDataAccessInstance();
+	return da.resultOperation("[aQuerySurface.inputInstalment.convertFileToJdbc(aQuerySurface.name)/]",(stm)-> {
+[if (aQuerySurface.inputInstalment <> null)]
+		[aQuerySurface.inputInstalment.prepareInput(aQuerySurface.name) /] 
+[/if]
+		 return true;
+	}, ( rs,ls1) -> {
+ 	    while (rs.next()) {	
+		[aQuerySurface.associatedClass.toUpperFirst() /] thevar = new [aQuerySurface.associatedClass.toUpperFirst() /](); 
+	
+	[for (it : AbstractNode | aQuerySurface.outputInstalment.nodes) ]
+		[it.getResult()/];
+	[/for]
+		ls1.add(thevar);
+	 }
+	});
+}
+ 
+[/file]
+[aQuerySurface.appendMethod()/]
+[/template]
+
+[template public outputGetter(it : AbstractNode) post (trim())] 
+	[let x : Node = it]
+	public [x.getType()/] get[x.getName().toUpperFirst() /]( ){
+		return [x.getName() /];
+	}	
+ [/let] 
+ [let x : MyTable = it]
+				[for (z : Field | x.fields)]
+	public [z.getType()/] get[z.getName().toUpperFirst()/]( ){
+		return [z.getName()/];
+	}	
+				[/for]
+			[/let] 
+[/template]
+
+[template public outputSetter(it : AbstractNode) post (trim())] 
+[let x : Node = it] 
+	public void set[x.getName().toUpperFirst() /]( [x.getType()/] [x.getName() /]){
+		this.[x.getName()/] = [x.getName() /] ;
+	}		   
+ 			[/let] 
+			[let x : MyTable = it]
+				[for (z : Field | x.fields)]
+	public void set[z.getName().toUpperFirst() /]( [z.getType()/] [z.getName() /]){
+		this.[z.getName()/] = [z.getName() /] ;
+	}
+				[/for]
+			[/let] 
+[/template]
+[template public getTermRelatianValue(it : ConditionLink) post (trim())] 
+[let x : EqualLink = it]=[/let] 
+[let x : GreaterThanLink = it]>[/let]
+[let x : GreaterEqualThanLink = it]>=[/let]
+[let x : LowerThanLink = it]<[/let]
+[let x : LowerEqualThanLink = it]<=[/let]
+[let x : InLink = it]in[/let]
+[let x : LikeLink = it]like[/let]
+
+[/template]
+
+[template public getPostfix(it : AbstractNode) post (trim())]
+	[let va : Node = it][if (va.column_name <> null and va.column_name.size() > 1)]
+ as [va.column_name/] 
+[/if] 
+[/let]  
+[/template]
+[template public outputProperties(it : AbstractNode) post (trim())] 
+	[let x : Field = it]private [x.getType()/] [x.getName() /]; [/let]
+	[let x : Literal = it]private [x.getType()/] [x.getName() /]; [/let]
+	[let x : NullLiteral = it]private [x.getType()/] [x.getName() /]; [/let]
+	[let x : Function = it]private [x.getType()/] [x.getName() /]; [/let]
+		[let x : MyTable = it]
+		[for (z : Field | x.fields)]	private [z.getType()/] [z.getName() /];
+	[/for]
+		[/let]
+[/template]
+
+[template public getResult(it : AbstractNode) post (trim())]
+[let x : Function = it] thevar.set[x.getName().toUpperFirst()/]( rs.get[x.getType().toString().toUpperFirst()/]([x.getCounter()/])) [/let]
+[let x : Input = it] thevar.set[x.getName().toUpperFirst()/]( rs.get[x.getType().toString().toUpperFirst()/]([x.getCounter()/])) [/let]
+		[let x : Field = it] thevar.set[x.getName().toUpperFirst()/]( rs.get[x.getType().toString().toUpperFirst()/]([x.getCounter()/])) [/let]
+		[let x : Literal = it] thevar.set[x.getName().toUpperFirst()/]( rs.get[x.getType().toString().toUpperFirst()/]([x.getCounter()/])) [/let]
+		[let x : NullLiteral = it] thevar.set[x.getName().toUpperFirst()/]( rs.get[x.getType().toString().toUpperFirst()/]([x.getCounter()/])) [/let]
+		[let x : MyTable = it] [for (z : Field | x.fields)] 
+thevar.set[z.getName().toUpperFirst()/]( rs.get[z.getType().toString().toUpperFirst()/]([z.getCounter()/]))
+ [/for][/let]
+[/template]
+[template public inputName(arg : InputDef) post (trim())]
+	[let x : InputStringDef = arg] final String  [ x.name /] [/let]
+	[let x : InputIntDef = arg ] final int  [ x.name /]	[/let]
+	[let x : InputFloatDef = arg] final float  [ x.name /]	[/let]
+	[let x : InputDateDef = arg] final Date  [ x.name /] [/let]
+	[let x : InputBitsDef = arg] final int  [ x.name /]	[/let]
+[/template]
+[template public getName(arg : AbstractNode) post (trim())]
+	[let x : Field = arg] [x.giveTheColumnName()/]  [/let]
+[let x : Input = arg] [x.column_name/]  [/let]
+[let x : Literal = arg] [x.column_name/]  [/let]
+[let x : Function = arg] [x.column_name/]  [/let]
+[let x : NullLiteral = arg] [x.column_name/]  [/let] 
+[/template]
+[template public getType(arg : AbstractNode) post (trim())]
+	[let x : Field = arg] [x.type.name/]   [/let]
+[let x : Literal = arg] [x.type.name/]   [/let]
+[let x : Input = arg] [x.type.name/]   [/let]
+[let x : Function = arg] [x.type.name/]   [/let]
+[let x : NullLiteral = arg] [x.type.name/]   [/let]
+[/template]
+[template public generateDisjuncAnd(dis : Junction) post (trim())]
+	    [for (a : JuncRelationship | dis.rels )  separator ('AND')  ]
+			( [ generateCondoElement(a.target) /] )
+		[/for]
+[/template]
+
+[template public generateDisjuncOr(dis : Junction) post (trim())]
+	    [for (a : JuncRelationship | dis.rels ) separator ('OR')]
+			( [ generateCondoElement(a.target) /] )
+		[/for]
+[/template]
+
+[template public generateCondoElement(arg : AbstractConditionElement) post (trim())]
+	[let e : Junction = arg]
+		[if (e.type.isEqualDisType('and'))]
+			[ generateDisjuncAnd(e) /]
+		[/if]
+		[if (e.type.isEqualDisType('or'))]
+			[ generateDisjuncOr(e) /]
+		[/if] 
+	[/let]
+	[let e : Term = arg]
+		 [e.link.src.generateNode(null)/] [e.link.getTermRelatianValue()/] [ e.link.dst.generateNode(null) /]  
+	[/let]
+[/template]
+
+[template public generateNode(nde: AbstractNode ) post (trim())]
+[let n : Field = nde] [if (n.distict)] distinct [/if]   [n.fieldName()/] [/let]
+[let n : MyTable = nde] [for (e : Field | n.fields) separator (',')] [generateField(e, n.alias)/] [e.getPostfix()/]  [/for] [/let]
+[let n : Literal = nde] [if (n.ltype = LiteralType::STRING )] "[n.value /]" [else]   [n.value /] [/if][/let]
+[let n : NullLiteral = nde]null [if (n.column_name <> null)] [/if] [/let]
+[let n : Input = nde][if (n.inputRef <> null)]:[n.inputRef.name /][/if][/let] 
+[let n : CallQuerySurface = nde] [ n.generateNodep( ) /]  [/let]
+[let n : Function = nde] [if ((not nde.isCallQuery()) and n.funcDef <> null)]
+[if (n.funcDef.name = '-' or n.funcDef.name = '+' or n.funcDef.name = '*' or n.funcDef.name = '/')]
+	( [for (e : Node | n.params) separator (n.funcDef.name)] [generateNode(e)/] [/for] )
+[else]
+ [n.funcDef.name/]( [for (e : Node | n.params) separator (',')] [generateNode(e)/] [/for] )
+[/if]
+ [/if] [/let]
+[/template]
+
+[template public generateField(f : Field,n : String)]
+	[ n /].[f.giveTheColumnName()/]
+[/template]
+ 
+[template public giveTheColumnName(aNode: Field) post (trim()) ]
+	[if (aNode.column_name <> null and aNode.column_name.size() > 0)]
+		 [aNode.column_name/]
+	[else]
+		 [aNode.name/]
+	[/if]
+[/template]
+ 

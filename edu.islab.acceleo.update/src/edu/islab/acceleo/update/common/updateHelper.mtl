@@ -1,0 +1,55 @@
+[comment encoding = Cp1252 /]
+[module updateHelper('http://www.update.it.is/v1.0/beta')/]
+
+[query public isNameBig(arg0 : Field) : Boolean
+	= invoke('edu.islab.acceleo.update.common.UpdateHelper', 'isNameBig(update.Field)', Sequence{arg0})
+/]
+
+[query public isThereRelations(arg0 : TableSelection) : Boolean
+	= invoke('edu.islab.acceleo.update.common.UpdateHelper', 'isThereRelations(update.TableSelection)', Sequence{arg0})
+/]
+
+[query public tableOField(arg0 : Field) : String
+	= invoke('edu.islab.acceleo.update.common.UpdateHelper', 'tableOField(update.Field)', Sequence{arg0})
+/]
+
+[query public fieldName(arg0 : Field) : String
+	= invoke('edu.islab.acceleo.update.common.UpdateHelper', 'fieldName(update.Field)', Sequence{arg0})
+/]
+
+[query public tableOFActField(arg0 : RealField) : String
+	= invoke('edu.islab.acceleo.update.common.UpdateHelper', 'tableOFActField(update.RealField)', Sequence{arg0})
+/]
+
+[query public actFieldName(arg0 : RealField) : String
+	= invoke('edu.islab.acceleo.update.common.UpdateHelper', 'actFieldName(update.RealField)', Sequence{arg0})
+/]
+
+[query public getSelectRelationType(arg0 : RelationSelect) : String
+	= invoke('edu.islab.acceleo.update.common.UpdateHelper', 'getSelectRelationType(update.RelationSelect)', Sequence{arg0})
+/]
+
+[query public isThereRoot(arg0 : ConditionInstalment) : Boolean
+	= invoke('edu.islab.acceleo.update.common.UpdateHelper', 'isThereRoot(update.ConditionInstalment)', Sequence{arg0})
+/]
+
+[query public isEqualDisType(arg0 : JuncType, arg1 : String) : Boolean
+	= invoke('edu.islab.acceleo.update.common.UpdateHelper', 'isEqualDisType(update.JuncType, java.lang.String)', Sequence{arg0, arg1})
+/]
+
+[query public isCallQuery(arg0 : AbstractNode) : Boolean
+	= invoke('edu.islab.acceleo.update.common.UpdateHelper', 'isCallQuery(update.AbstractNode)', Sequence{arg0})
+/]
+
+[query public generateNodep(arg0 : Node) : String
+	= invoke('edu.islab.acceleo.update.common.UpdateHelper', 'generateNodep(update.Node)', Sequence{arg0})
+/]
+
+[query public prepareInput(arg0 : InputInstalment, arg1 : String) : String
+	= invoke('edu.islab.acceleo.update.common.UpdateHelper', 'prepareInput(update.InputInstalment, java.lang.String)', Sequence{arg0, arg1})
+/]
+
+[query public convertFileToJdbc(arg0 : InputInstalment, arg1 : String) : String
+	= invoke('edu.islab.acceleo.update.common.UpdateHelper', 'convertFileToJdbc(update.InputInstalment, java.lang.String)', Sequence{arg0, arg1})
+/]
+

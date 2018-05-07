@@ -1,0 +1,51 @@
+[comment encoding = UTF-8 /]
+[module generate('http://www.insert.it.is/v1.0/beta')]
+[import edu::islab::acceleo::insert::common::insertHelper /]
+
+[template public generateElement(anInsertSurface : InsertSurface)]
+	[comment @main /]
+	[file (anInsertSurface.name.concat('.sql'), false, 'utf-8')]
+		[if (anInsertSurface.prepareList <> null and anInsertSurface.tableInstalment <> null and anInsertSurface.prepareList.nodes->size() = anInsertSurface.tableInstalment.fields->size())]
+		insert into [ anInsertSurface.tableInstalment.name /] ( [for (v1 : Field | anInsertSurface.tableInstalment.fields) separator (',')] [v1.name/] [/for] ) values ( [for (v1 : Node | anInsertSurface.prepareList.nodes) separator (',')] [v1.generateNode() /]  [/for] )
+	    [/if]
+	[/file]
+	[file (anInsertSurface.name.concat('_Func.java'), false, 'utf-8')]
+		[if (anInsertSurface.prepareList <> null and anInsertSurface.tableInstalment <> null and anInsertSurface.prepareList.nodes->size() = anInsertSurface.tableInstalment.fields->size())]
+		
+public static List<[anInsertSurface.associatedClass.toUpperFirst()/]> [anInsertSurface.name/]( [if (anInsertSurface.inputInstalment <> null)]
+	[for (it : InputDef | anInsertSurface.inputInstalment.inputs)  separator (',') ] [it.inputName()/] [/for] [/if]){
+
+	DataAccess<[anInsertSurface.associatedClass.toUpperFirst() /]> da = DataAccess.<[anInsertSurface.associatedClass.toUpperFirst() /]>getDataAccessInstance();
+	return da.resultOperation("[anInsertSurface.inputInstalment.convertFileToJdbc(anInsertSurface.name)/]",(stm)-> {
+[if (anInsertSurface.inputInstalment <> null)]
+		[anInsertSurface.inputInstalment.prepareInput(anInsertSurface.name) /] 
+[/if]
+		 return true;
+	});
+}
+		[/if]
+	[/file]
+[/template]
+[template public inputName(arg : InputDef) post (trim())]
+	[let x : InputStringDef = arg] final String  [ x.name /] [/let]
+	[let x : InputIntDef = arg ] final int  [ x.name /]	[/let]
+	[let x : InputFloatDef = arg] final float  [ x.name /]	[/let]
+	[let x : InputDateDef = arg] final Date  [ x.name /] [/let]
+	[let x : InputBitsDef = arg] final int  [ x.name /]	[/let]
+[/template]
+
+[template public generateNode(nde: Node) post (trim())] 
+
+[let n : Literal = nde] [if (n.ltype = LiteralType::STRING )] "[n.value /]" [else]   [n.value /] [/if][/let]
+[let n : NullLiteral = nde]null [if (n.column_name <> null)] [/if] [/let]
+[let n : Input = nde][if (n.inpDef <> null)]:[n.inpDef.name /][/if][/let] 
+[let n : CallSurfaceQuery = nde] [ n.generateNodep( ) /]  [/let]
+[let n : Function = nde] [if ((not nde.isCallQuery()) and n.funcDef <> null)]
+[if (n.funcDef.name = '-' or n.funcDef.name = '+' or n.funcDef.name = '*' or n.funcDef.name = '/')]
+	( [for (e : Node | n.params) separator (n.funcDef.name)] [generateNode(e)/] [/for] )
+[else]
+ [n.funcDef.name/]( [for (e : Node | n.params) separator (',')] [generateNode(e)/] [/for] )
+[/if]
+ [/if] [/let]
+[/template]
+
